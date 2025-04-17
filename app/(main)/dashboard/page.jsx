@@ -7,6 +7,7 @@ import AccountCard from "./_components/account-card";
 import { getCurrentBudget } from "@/actions/budget";
 import BudgetProgress from "./_components/budget-progress";
 import { DashboardOverview } from "./_components/transaction-overview";
+import CreatzionAI from "@/components/CreatzionAI";
 
 async function DashboardPage(){
   const [accounts, transactions] = await Promise.all([
@@ -22,6 +23,9 @@ async function DashboardPage(){
   }
   
   return <div className="space-y-8">
+
+  
+
     {/*Budget Progress*/}
     {defaultAccount && (
       <BudgetProgress initialBudget={budgetData?.budget} currentExpenses={budgetData?.currentExpense || 0}/>
@@ -49,6 +53,8 @@ async function DashboardPage(){
 })}
     </div>
     
+    {/* ✅ Add Creatzion AI Chatbot here */}
+    <CreatzionAI />
   </div>;
 }
 export default DashboardPage;
