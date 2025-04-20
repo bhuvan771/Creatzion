@@ -1,16 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { X, Maximize2, Minimize2 } from 'lucide-react';
 
 const CreatzionAI = () => {
   const [showChatbot, setShowChatbot] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'bot', content: "Hi! I'm Creatzion AI. Ask me anything about your salary, savings, or finances." },
+    { role: 'bot', content: "👋 Hi! I'm Creatzion AI. Ask me anything about your salary, savings, or finances." },
   ]);
   const [input, setInput] = useState('');
 
-  // Show chatbot after scrolling 300px
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -37,7 +38,7 @@ const CreatzionAI = () => {
       const response = await fetch('/api/creatzion-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }), // Send messages array
+        body: JSON.stringify({ messages: newMessages }),
       });
 
       const data = await response.json();
@@ -54,38 +55,67 @@ const CreatzionAI = () => {
     <div className="fixed bottom-4 right-4 z-50">
       {!isOpen ? (
         <button
-          className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700"
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full p-4 shadow-lg hover:scale-110 transition"
           onClick={() => setIsOpen(true)}
         >
           💬
         </button>
       ) : (
-        <div className="bg-white w-80 h-96 rounded-xl shadow-xl flex flex-col">
-          <div className="bg-blue-600 text-white p-3 flex justify-between items-center rounded-t-xl">
-            <span>Creatzion AI</span>
-            <button onClick={() => setIsOpen(false)}>✖️</button>
+        <div
+          className={`bg-white ${isExpanded ? 'h-[95vh] w-[95vw]' : 'h-96 w-80'} rounded-2xl shadow-2xl flex flex-col transition-all duration-300`}
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-4 py-3 flex justify-between items-center rounded-t-2xl">
+            <span className="font-semibold text-sm">Creatzion AI</span>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="hover:text-gray-200 transition"
+                title={isExpanded ? 'Minimize' : 'Expand'}
+              >
+                {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="hover:text-gray-200 transition"
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
-          <div className="flex-1 p-2 overflow-y-auto">
+
+          {/* Messages */}
+          <div className="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-3">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`my-1 p-2 rounded-lg text-sm ${
-                  msg.role === 'user' ? 'bg-gray-200 text-right' : 'bg-blue-100 text-left'
+                className={`px-4 py-3 rounded-xl text-sm max-w-[85%] ${
+                  msg.role === 'user'
+                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-gray  self-end ml-auto'
+                    : 'bg-white text-black-800 border self-start  '
                 }`}
               >
                 {msg.content}
               </div>
             ))}
           </div>
-          <form onSubmit={handleSubmit} className="flex p-2 border-t">
+
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="flex gap-2 p-3 border-t bg-white">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="flex-1 p-2 text-sm border rounded-l"
-              placeholder="Ask financial questions..."
+              className="flex-1 px-4 py-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Ask anything financial..."
             />
-            <button type="submit" className="bg-blue-600 text-white px-4 rounded-r text-sm">Send</button>
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm rounded-md"
+            >
+              Ask
+            </button>
           </form>
         </div>
       )}

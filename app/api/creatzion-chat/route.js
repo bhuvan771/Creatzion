@@ -1,10 +1,44 @@
 import { NextResponse } from 'next/server';
 
+let lastUserMessage = ''; // Store the last user message to avoid repetition
+
 export async function POST(req) {
   const { messages } = await req.json();
   const apiKey = process.env.GEMINI_API_KEY;
 
   const userMessage = messages?.[messages.length - 1]?.content || 'How can I manage my salary?';
+
+  // Check if the user message is the same as the last one
+  if (userMessage === lastUserMessage) {
+    return NextResponse.json({
+      reply: 'You already asked that. Can I help you with something else related to your finances or well-being?',
+    });
+  }
+
+  // Update the last user message
+  lastUserMessage = userMessage;
+
+  // Custom Creatzion response
+  if (userMessage.toLowerCase().includes('creatzion')) {
+    return NextResponse.json({
+      reply: `
+🌟 Welcome to Creatzion! 🌟
+
+Creatzion is a cutting-edge financial management platform designed to help individuals manage their salary, savings, expenses, and investments.
+
+💡 It's more than just a website — it's a holistic financial companion built with a strong focus on Indian users.
+
+👨‍💻 Created by college friends Rubesh, Yashwanth, and Bhuvan, Creatzion began as a college project. What started in the classroom is now evolving into something much bigger!
+
+🚀 We are in the process of launching our own startup company named "Creaztion Technologies" — with a vision to empower people to take control of their finances and mental well-being.
+
+🔍 Whether you're planning your salary, looking to save smartly, or need guidance for emergency funds — Creatzion is here for you.
+
+💼 Stay tuned as we take this dream forward — from project to product, and from friendship to a full-fledged startup.
+      `.trim()
+    });
+  }
+
 
   const prompt = `
 You are Creatzion AI — a friendly, smart assistant who helps users with:
@@ -21,7 +55,7 @@ Now, here is the user's message:
 
 "${userMessage}"
 
-Reply in clear, nicely spaced format. Keep responses friendly, practical, and helpful.
+Reply in a clear, well-structured format. Keep responses friendly, practical, and helpful.
   `;
 
   try {
@@ -49,9 +83,13 @@ Reply in clear, nicely spaced format. Keep responses friendly, practical, and he
       geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ??
       'Sorry 😔 I couldn’t come up with a good reply. Please try again.';
 
-    return NextResponse.json({ reply });
+    // Ensure clear formatting and no unnecessary symbols
+    const clearFormattedReply = reply.replace(/\*/g, '').trim(); // Removes any unwanted symbols like stars
+
+    return NextResponse.json({ reply: clearFormattedReply });
   } catch (error) {
     console.error('Gemini error:', error);
     return NextResponse.json({ error: '❌ Something went wrong while talking to Creatzion AI.' }, { status: 500 });
   }
 }
+  
