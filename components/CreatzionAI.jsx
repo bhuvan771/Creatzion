@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Maximize2, Minimize2, Bot } from 'lucide-react';
 
 const CreatzionAI = () => {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -58,7 +58,7 @@ const CreatzionAI = () => {
           className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full p-4 shadow-lg hover:scale-110 transition"
           onClick={() => setIsOpen(true)}
         >
-          💬
+         <Bot/>
         </button>
       ) : (
         <div
