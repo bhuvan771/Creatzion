@@ -12,6 +12,9 @@ const CreatzionAI = () => {
   ]);
   const [input, setInput] = useState('');
 
+  // ✅ Typing indicator state
+  const [isBotTyping, setIsBotTyping] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -34,6 +37,8 @@ const CreatzionAI = () => {
     setMessages(newMessages);
     setInput('');
 
+    setIsBotTyping(true); // ✅ Start typing indicator
+
     try {
       const response = await fetch('/api/creatzion-chat', {
         method: 'POST',
@@ -46,6 +51,8 @@ const CreatzionAI = () => {
       setMessages([...newMessages, { role: 'bot', content: botReply }]);
     } catch (error) {
       setMessages([...newMessages, { role: 'bot', content: "⚠️ Something went wrong." }]);
+    } finally {
+      setIsBotTyping(false); // ✅ Stop typing indicator
     }
   };
 
@@ -58,7 +65,7 @@ const CreatzionAI = () => {
           className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full p-4 shadow-lg hover:scale-110 transition"
           onClick={() => setIsOpen(true)}
         >
-         <Bot/>
+          <Bot />
         </button>
       ) : (
         <div
@@ -92,13 +99,20 @@ const CreatzionAI = () => {
                 key={idx}
                 className={`px-4 py-3 rounded-xl text-sm max-w-[85%] ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-gray  self-end ml-auto'
-                    : 'bg-white text-black-800 border self-start  '
+                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-gray self-end ml-auto'
+                    : 'bg-white text-black-800 border self-start'
                 }`}
               >
                 {msg.content}
               </div>
             ))}
+
+            {/* ✅ Typing indicator */}
+            {isBotTyping && (
+              <div className="px-4 py-3 rounded-xl text-sm max-w-[85%] bg-white text-black-600 border self-start animate-pulse">
+                Thinking<span className="animate-bounce">...</span>
+              </div>
+            )}
           </div>
 
           {/* Input */}
