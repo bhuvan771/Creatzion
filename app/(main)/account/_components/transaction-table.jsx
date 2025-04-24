@@ -1,10 +1,5 @@
 "use client";
-import * as Dialog from '@radix-ui/react-dialog';
-import { Download } from 'lucide-react';
 
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // ✅ this is required!
 import { useState, useEffect, useMemo } from "react";
 import {
   ChevronDown,
@@ -80,56 +75,6 @@ export function TransactionTable({ transactions }) {
   const [recurringFilter, setRecurringFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
-
-  const exportToExcel = (data) => {
-    const exportData = data.map((txn) => ({
-      Date: format(new Date(txn.date), "PP"),
-      Description: txn.description,
-      Category: txn.category,
-      Amount: (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
-      Recurring: txn.isRecurring ? txn.recurringInterval : "One-time",
-    }));
-  
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-    XLSX.writeFile(workbook, "transactions.xlsx");
-  };
-  
-  const exportToPDF = (data) => {
-    const doc = new jsPDF();
-    const rows = data.map((txn) => [
-      format(new Date(txn.date), "PP"),
-      txn.description,
-      txn.category,
-      (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
-      txn.isRecurring ? txn.recurringInterval : "One-time",
-    ]);
-  
-    autoTable(doc, {
-      head: [["Date", "Description", "Category", "Amount", "Recurring"]],
-      body: rows,
-    });
-  
-    doc.save("transactions.pdf");
-  };
-  
-  
-  const [startDate, setStartDate] = useState("");
-const [endDate, setEndDate] = useState("");
-
-const filterByDate = (txn) => {
-  const txnDate = new Date(txn.date);
-  const from = startDate ? new Date(startDate) : null;
-  const to = endDate ? new Date(endDate) : null;
-
-  return (
-    (!from || txnDate >= from) &&
-    (!to || txnDate <= to)
-  );
-};
-
-  
 
   // Memoized filtered and sorted transactions
   const filteredAndSortedTransactions = useMemo(() => {
@@ -257,8 +202,14 @@ const filterByDate = (txn) => {
         <BarLoader className="mt-4" width={"100%"} color="#9333ea" />
       )}
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 w-full">
+      <div className={`relative transition-all duration-300 ${
+  selectedIds.length > 0 
+    ? "sm:max-w-[300px]" 
+    : "sm:max-w-[850px]"
+} sm:min-w-[675px] flex-1`}>
+
+      
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search transactions..."
@@ -303,19 +254,131 @@ const filterByDate = (txn) => {
             </SelectContent>
           </Select>
 
-          {/* Bulk Actions */}
-          {selectedIds.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
+
+          <Dialog.Root>
+  <Dialog.Trigger asChild>
+    <Button
+      variant="outline"
+      size="icon"
+      title="Export"
+      className="hover:bg-blue-100 text-blue-600"
+    >
+      <Download className="h-4 w-4" />
+    </Button>
+  </Dialog.Trigger>
+
+  <Dialog.Portal>
+    <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
+    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[95%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white px-8 py-10 shadow-xl transition-all duration-300 space-y-8">
+      
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-4">
+      <Dialog.Title className="text-2xl font-semibold text-gray-800"></Dialog.Title>
+        <h2 className="text-2xl font-semibold text-gray-800">Export Transactions</h2>
+        <Dialog.Close asChild>
+          <button className="text-gray-500 hover:text-gray-700 transition">
+            <X className="h-6 w-6" />
+          </button>
+        </Dialog.Close>
+      </div>
+
+      {/* Quick Month Select */}
+      <div>
+        <p className="text-sm font-medium text-gray-700 mb-3">Quick Month Select</p>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+          {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month, idx) => {
+            const year = new Date().getFullYear();
+            const first = new Date(year, idx, 1).toISOString().split("T")[0];
+            const last = new Date(year, idx + 1, 0).toISOString().split("T")[0];
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  setStartDate(first);
+                  setEndDate(last);
+                }}
+                className="rounded-lg text-sm px-3 py-2 font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 transition"
               >
-                <Trash className="h-4 w-4 mr-2" />
-                Delete Selected ({selectedIds.length})
-              </Button>
-            </div>
-          )}
+                {month}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Custom Date Range */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="text-sm font-medium text-gray-600 mb-1 block">From</label>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-violet-500"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-600 mb-1 block">To</label>
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-violet-500"
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+      <button
+  onClick={() => exportToExcel(filteredAndSortedTransactions.filter(filterByDate))}
+  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
+>
+  📗 Download Excel
+</button>
+        <button
+          onClick={() => exportToPDF(filteredAndSortedTransactions.filter(filterByDate))}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+        >
+          📘 Download PDF
+        </button>
+      </div>
+    </Dialog.Content>
+  </Dialog.Portal>
+</Dialog.Root>
+
+
+
+          {/* Bulk Actions */}
+{/* Mobile Only - Delete Button on Separate Line */}
+{selectedIds.length > 0 && (
+  <div className="flex sm:hidden w-full mt-2">
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={handleBulkDelete}
+      className="w-full"
+    >
+      <Trash className="h-4 w-4 mr-2" />
+      Delete Selected ({selectedIds.length})
+    </Button>
+  </div>
+)}
+
+{/* Desktop Only - Inline Delete Button */}
+{selectedIds.length > 0 && (
+  <div className="hidden sm:flex sm:w-auto sm:ml-0">
+    <Button
+      variant="destructive"
+      size="sm"
+      onClick={handleBulkDelete}
+    >
+      <Trash className="h-4 w-4 mr-2" />
+      Delete Selected ({selectedIds.length})
+    </Button>
+  </div>
+)}
+
 
           {(searchTerm || typeFilter || recurringFilter) && (
             <Button
@@ -329,79 +392,6 @@ const filterByDate = (txn) => {
           )}
         </div>
       </div>
-
-     
-
-
-      <Dialog.Root>
-  <Dialog.Trigger asChild>
-    <button className="flex items-center gap-2 bg-violet-600 text-white px-4 py-2 rounded-md hover:bg-violet-700 transition">
-      <Download className="w-4 h-4" />
-      Export
-    </button>
-  </Dialog.Trigger>
-
-  <Dialog.Portal>
-    <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50" />
-    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[90%] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-6 shadow-lg space-y-4">
-      <div className="flex justify-between items-center">
-        <Dialog.Title className="text-lg font-semibold">Download Transactions</Dialog.Title>
-        <Dialog.Close asChild>
-          <button className="text-gray-500 hover:text-gray-700">
-            <X className="h-4 w-4" />
-          </button>
-        </Dialog.Close>
-      </div>
-
-      {/* 📅 Month Quick Picker */}
-      <div className="flex flex-wrap gap-2">
-        {["January","February","March","April","May","June","July","August","September","October","November","December"].map((month, idx) => (
-          <button
-            key={idx}
-            className="text-sm px-2 py-1 border rounded hover:bg-violet-100 transition"
-            onClick={() => {
-              const year = new Date().getFullYear();
-              const first = new Date(year, idx, 1).toISOString().split("T")[0];
-              const last = new Date(year, idx + 1, 0).toISOString().split("T")[0];
-              setStartDate(first);
-              setEndDate(last);
-            }}
-          >
-            {month.slice(0, 3)}
-          </button>
-        ))}
-      </div>
-
-      {/* 🗓️ Custom Date Inputs */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-col">
-          <label className="text-sm font-medium">From</label>
-          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm font-medium">To</label>
-          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
-      </div>
-
-      {/* 📥 Buttons */}
-      <div className="flex flex-col gap-3 mt-4">
-        <button
-          onClick={() => exportToExcel(filteredAndSortedTransactions.filter(filterByDate))}
-          className="bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition"
-        >
-          Download Excel
-        </button>
-        <button
-          onClick={() => exportToPDF(filteredAndSortedTransactions.filter(filterByDate))}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition"
-        >
-          Download PDF
-        </button>
-      </div>
-    </Dialog.Content>
-  </Dialog.Portal>
-</Dialog.Root>
 
       {/* Transactions Table */}
       <div className="rounded-md border">
