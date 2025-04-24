@@ -38,6 +38,8 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "inngest": "^3.32.9",

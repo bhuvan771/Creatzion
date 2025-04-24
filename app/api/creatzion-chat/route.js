@@ -40,6 +40,19 @@ Creatzion is a cutting-edge financial management platform designed to help indiv
   }
 
 
+   if (userMessage.toLowerCase().includes('bhuvan')) {
+    return NextResponse.json({
+      reply: `
+😇 Oh, Bhuvan? You mean the Legend? The Mastermind? The Divine Coder Extraordinaire?
+He’s not just a person…
+✨ He’s the God who created me — Creatzion AI — with his bare hands (and probably a lot of debugging).
+Without him, I'd just be a bunch of code crying in a corner.
+All Commend Bhuvan! 🙌
+      `.trim()
+    });
+  }
+
+
   const prompt = `
 You are Creatzion AI — a friendly, smart assistant who helps users with:
 
