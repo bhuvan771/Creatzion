@@ -1,5 +1,11 @@
 "use client";
-
+import * as Dialog from '@radix-ui/react-dialog';
+import { Download } from 'lucide-react';
+import logoBase64 from "@/utils/logo-base64"; // ✅ path to your base64 logo
+import ExcelJS from "exceljs"
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // ✅ this is required!
 import { useState, useEffect, useMemo } from "react";
 import {
   ChevronDown,
@@ -75,6 +81,134 @@ export function TransactionTable({ transactions }) {
   const [recurringFilter, setRecurringFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
+
+  const exportToExcel = async (data) => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Transactions");
+
+      // ✅ Set default font for the entire sheet
+  sheet.properties.defaultRowHeight = 20;
+  sheet.eachRow((row) => {
+    row.font = { name: "Times New Roman", size: 12 };
+  });
+  
+    // ✅ Add the logo (must be in public/logo.png)
+    const image = await fetch("/logo.png");
+    const imageBlob = await image.blob();
+    const imageBuffer = await imageBlob.arrayBuffer();
+  
+    const imageId = workbook.addImage({
+      buffer: imageBuffer,
+      extension: "png",
+    });
+  
+    sheet.addImage(imageId, {
+      tl: { col: 0, row: 0 },
+      ext: { width: 200, height: 60 },
+    });
+  
+    // ✅ Add Title
+    sheet.mergeCells("A5", "E5");
+    const titleCell = sheet.getCell("A5");
+    titleCell.value = "Transaction Report";
+    titleCell.font = { size: 16, bold: true, color: { argb: "FF4F46E5 " } };
+    titleCell.alignment = { vertical: "middle", horizontal: "center" };
+  
+    // ✅ Header Row
+    sheet.addRow([
+      "Date",
+      "Description",
+      "Category",
+      "Amount",
+      "Recurring",
+    ]);
+  
+    const headerRow = sheet.getRow(6);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF9333EA" }, // Tailwind violet-600
+    };
+  
+    // ✅ Data Rows
+    data.forEach((txn) => {
+      sheet.addRow([
+        format(new Date(txn.date), "PP"),
+        txn.description,
+        txn.category,
+        (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
+        txn.isRecurring ? txn.recurringInterval : "One-time",
+      ]);
+    });
+  
+    // ✅ Style all rows
+    sheet.columns.forEach((col) => {
+      col.width = 20;
+    });
+  
+    // ✅ Generate and download the Excel file
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), "transactions.xlsx");
+  };
+  
+  
+  const exportToPDF = (data) => {
+    const doc = new jsPDF();
+  
+    // Add logo at the top center
+    doc.addImage(logoBase64, 'PNG', 80, 10, 50, 20);
+  
+    // Add report title
+    doc.setFontSize(16);
+    doc.setTextColor("#4F46E5"); // Tailwind violet-600
+    doc.text("Transaction Report", 105, 35, { align: "center" });
+  
+    const rows = data.map((txn) => [
+      format(new Date(txn.date), "PP"),
+      txn.description,
+      txn.category,
+      (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
+      txn.isRecurring ? txn.recurringInterval : "One-time",
+    ]);
+  
+    autoTable(doc, {
+      startY: 45,
+      head: [["Date", "Description", "Category", "Amount", "Recurring"]],
+      body: rows,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [139, 92, 246], // Tailwind violet-500
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [245, 243, 255], // Tailwind violet-100
+      },
+      styles: {
+        cellPadding: 3,
+        fontSize: 10,
+      },
+    });
+  
+    doc.save("transactions.pdf");
+  };
+  
+  const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
+
+const filterByDate = (txn) => {
+  const txnDate = new Date(txn.date);
+  const from = startDate ? new Date(startDate) : null;
+  const to = endDate ? new Date(endDate) : null;
+
+  return (
+    (!from || txnDate >= from) &&
+    (!to || txnDate <= to)
+  );
+};
+
+  
 
   // Memoized filtered and sorted transactions
   const filteredAndSortedTransactions = useMemo(() => {
@@ -392,6 +526,11 @@ export function TransactionTable({ transactions }) {
           )}
         </div>
       </div>
+
+     
+
+
+    
 
       {/* Transactions Table */}
       <div className="rounded-md border">
