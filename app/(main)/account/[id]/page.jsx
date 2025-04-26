@@ -20,7 +20,7 @@ const AccountsPage =async ({params}) => {
         <p className='text-muted-foreground'>{account.type.charAt(0) + account.type.slice(1).toLowerCase()}Account</p>
       </div>
       <div className='text-right pb-2'>
-        <div className='text-x1 sm:text-2x1 font-bold'>${parseFloat(account.balance).toFixed(2)}</div>
+        <div className='text-x1 sm:text-2x1 font-bold'>₹{parseFloat(account.balance).toFixed(2)}</div>
         <p className=' text-sm text-muted-foreground'>{account._count.transactions} Transactions</p>
       </div>
       </div>

@@ -35,7 +35,6 @@ const AccountChart = ({ transactions }) => {
       ? startOfDay(subDays(now, range.days))
       : startOfDay(new Date(0));
 
-    //Filter transactions within date range
     const filtered = transactions.filter(
       (t) => new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
     );
@@ -55,62 +54,59 @@ const AccountChart = ({ transactions }) => {
       return acc;
     }, {});
 
-    //Convert to array and sort by date
     return Object.values(grouped).sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
   }, [transactions, dateRange]);
- const totals = useMemo(()=>{
-  return filteredData.reduce(
-    (acc,day)=>({
-      income:acc.income + day.income,
-      expense:acc.expense + day.expense
-    }),
-    {income:0, expense:0}
-  );
- },[filteredData]);
+
+  const totals = useMemo(() => {
+    return filteredData.reduce(
+      (acc, day) => ({
+        income: acc.income + day.income,
+        expense: acc.expense + day.expense,
+      }),
+      { income: 0, expense: 0 }
+    );
+  }, [filteredData]);
+
   return (
     <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-      <CardTitle className="text-base font-normal">Transaction Overview</CardTitle>
-      <Select defaultValue={dateRange} onValueChange={setDateRange}>
-  <SelectTrigger className="w-[140px]">
-    <SelectValue placeholder="Select range" />
-  </SelectTrigger>
-  <SelectContent>
-    {Object.entries(DATE_RANGES).map(([key,{label}])=>{
-        return(
-        <SelectItem key={key} value={key}>
-          {label}
-        </SelectItem>
-        );
-    })}
-  </SelectContent>
-</Select>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+        <CardTitle className="text-base font-normal">Transaction Overview</CardTitle>
+        <Select defaultValue={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Select range" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(DATE_RANGES).map(([key, { label }]) => (
+              <SelectItem key={key} value={key}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-around mb-6 text-sm">
+          <div className="text-center">
+            <p className="text-muted-foreground">Total Income</p>
+            <p className="text-lg font-bold text-green-500">₹{totals.income.toFixed(2)}</p>
+          </div>
 
-    </CardHeader>
-    <CardContent>
+          <div className="text-center">
+            <p className="text-muted-foreground">Total Expenses</p>
+            <p className="text-lg font-bold text-red-500">₹{totals.expense.toFixed(2)}</p>
+          </div>
 
-      <div className="flex justify-around mb-6 text-sm">
-        <div className="text-center">
-          <p className="text-muted-foreground">Total Income</p>
-          <p className="text-lg font-bold text-green-500">${totals.income.toFixed(2)}</p>
+          <div className="text-center">
+            <p className="text-muted-foreground">Net</p>
+            <p className={`text-lg font-bold ${totals.income - totals.expense >= 0 ? "text-green-500" : "text-red-500"}`}>
+              ₹{(totals.income - totals.expense).toFixed(2)}
+            </p>
+          </div>
         </div>
 
-
-        <div className="text-center">
-          <p className="text-muted-foreground">Total Expenses</p>
-          <p className="text-lg font-bold text-red-500">${totals.expense.toFixed(2)}</p>
-        </div>
-
-
-        <div className="text-center">
-          <p className="text-muted-foreground">Net</p>
-          <p className={`text-lg font-bold ${totals.income - totals.expense >=0 ?"text-green-500" :"text-red-500"}`}  >${(totals.income - totals.expense).toFixed(2)}</p>
-        </div>
-      </div>
-
-      <div className="h-[300px]">
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={filteredData}
@@ -127,20 +123,19 @@ const AccountChart = ({ transactions }) => {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `₹${value}`}
               />
               <Tooltip
-  formatter={(value) => [`$${value}`, undefined]}
-  contentStyle={{
-    background: "linear-gradient(135deg, white, white)", // Purple gradient
-    border: "2px solid white",
-    borderRadius: "12px",
-    color: "black",
-    padding: "12px",
-    boxShadow: "0px 4px 12px rgba(147, 51, 234, 0.4)",
-  }}
-/>
-
+                formatter={(value) => [`₹${value}`, undefined]}
+                contentStyle={{
+                  background: "linear-gradient(135deg, white, white)",
+                  border: "2px solid white",
+                  borderRadius: "12px",
+                  color: "black",
+                  padding: "12px",
+                  boxShadow: "0px 4px 12px rgba(147, 51, 234, 0.4)",
+                }}
+              />
               <Legend />
               <Bar
                 dataKey="income"
@@ -159,9 +154,6 @@ const AccountChart = ({ transactions }) => {
         </div>
       </CardContent>
     </Card>
-  
-     
-   
   );
 };
 

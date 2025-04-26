@@ -33,19 +33,19 @@ export default function EmailTemplate({
               <div style={styles.stat}>
                 <Text style={styles.text}>Total Income</Text>
                 <Text style={styles.heading}>
-                  ${data?.stats?.totalIncome ?? "N/A"}
+                ₹{data?.stats?.totalIncome ?? "N/A"}
                 </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Total Expenses</Text>
                 <Text style={styles.heading}>
-                  ${data?.stats?.totalExpenses ?? "N/A"}
+                ₹{data?.stats?.totalExpenses ?? "N/A"}
                 </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Net</Text>
                 <Text style={styles.heading}>
-                  ${data?.stats?.totalIncome && data?.stats?.totalExpenses
+                ₹{data?.stats?.totalIncome && data?.stats?.totalExpenses
                     ? data.stats.totalIncome - data.stats.totalExpenses
                     : "N/A"}
                 </Text>
@@ -60,7 +60,7 @@ export default function EmailTemplate({
                   ([category, amount]) => (
                     <div key={category} style={styles.row}>
                       <Text style={styles.text}>{category}</Text>
-                      <Text style={styles.text}>${amount}</Text>
+                      <Text style={styles.text}>₹{amount}</Text>
                     </div>
                   )
                 )}
@@ -106,19 +106,19 @@ export default function EmailTemplate({
               <div style={styles.stat}>
                 <Text style={styles.text}>Budget Amount</Text>
                 <Text style={styles.heading}>
-                  ${data?.budgetAmount ?? "N/A"}
+                ₹{data?.budgetAmount ?? "N/A"}
                 </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Spent So Far</Text>
                 <Text style={styles.heading}>
-                  ${data?.totalExpenses ?? "N/A"}
+                ₹{data?.totalExpenses ?? "N/A"}
                 </Text>
               </div>
               <div style={styles.stat}>
                 <Text style={styles.text}>Remaining</Text>
                 <Text style={styles.heading}>
-                  ${data?.budgetAmount && data?.totalExpenses
+                ₹{data?.budgetAmount && data?.totalExpenses
                     ? data.budgetAmount - data.totalExpenses
                     : "N/A"}
                 </Text>
