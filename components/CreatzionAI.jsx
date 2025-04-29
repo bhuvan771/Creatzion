@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { X, Maximize2, Minimize2, Bot } from 'lucide-react';
 
 const CreatzionAI = () => {
@@ -11,9 +11,9 @@ const CreatzionAI = () => {
     { role: 'bot', content: "👋 Hi! I'm Creatzion AI. Ask me anything about your salary, savings, or finances." },
   ]);
   const [input, setInput] = useState('');
-
-  // ✅ Typing indicator state
   const [isBotTyping, setIsBotTyping] = useState(false);
+
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +28,13 @@ const CreatzionAI = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // ✅ Scroll to bottom when messages update
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isBotTyping]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -37,7 +44,7 @@ const CreatzionAI = () => {
     setMessages(newMessages);
     setInput('');
 
-    setIsBotTyping(true); // ✅ Start typing indicator
+    setIsBotTyping(true);
 
     try {
       const response = await fetch('/api/creatzion-chat', {
@@ -52,7 +59,7 @@ const CreatzionAI = () => {
     } catch (error) {
       setMessages([...newMessages, { role: 'bot', content: "⚠️ Something went wrong." }]);
     } finally {
-      setIsBotTyping(false); // ✅ Stop typing indicator
+      setIsBotTyping(false);
     }
   };
 
@@ -69,7 +76,9 @@ const CreatzionAI = () => {
         </button>
       ) : (
         <div
-          className={`bg-white ${isExpanded ? 'h-[95vh] w-[95vw]' : 'h-96 w-80'} rounded-2xl shadow-2xl flex flex-col transition-all duration-300`}
+          className={`bg-white ${
+            isExpanded ? 'h-[80vh] w-[90vw] md:h-[95vh] md:w-[95vw]' : 'h-96 w-80'
+          } rounded-2xl shadow-2xl flex flex-col transition-all duration-300`}
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-4 py-3 flex justify-between items-center rounded-t-2xl">
@@ -97,22 +106,23 @@ const CreatzionAI = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`px-4 py-3 rounded-xl text-sm max-w-[85%] ${
+                className={`px-4 py-3 rounded-xl text-sm max-w-[85%] break-words ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-gray self-end ml-auto'
-                    : 'bg-white text-black-800 border self-start'
+                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white self-end ml-auto'
+                    : 'bg-white text-black border self-start'
                 }`}
               >
                 {msg.content}
               </div>
             ))}
 
-            {/* ✅ Typing indicator */}
+            {/* Typing indicator */}
             {isBotTyping && (
-              <div className="px-4 py-3 rounded-xl text-sm max-w-[85%] bg-white text-black-600 border self-start animate-pulse">
+              <div className="px-4 py-3 rounded-xl text-sm max-w-[85%] bg-white text-black border self-start animate-pulse">
                 Thinking<span className="animate-bounce">...</span>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

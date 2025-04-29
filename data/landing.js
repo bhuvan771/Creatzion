@@ -5,6 +5,7 @@ import {
     CreditCard,
     Globe,
     Zap,
+    Bot,
   } from "lucide-react";
   
   // Stats Data
@@ -52,9 +53,9 @@ import {
       description: "Manage multiple accounts and credit cards in one place",
     },
     {
-      icon: <Globe className="h-8 w-8 text-blue-600" />,
-      title: "Multi-Currency",
-      description: "Support for multiple currencies with real-time conversion",
+      icon: <Bot className="h-8 w-8 text-blue-600" />,
+      title: "Creatzion AI",
+      description: "Creatzion AI helps you set savings goals and track your progress with ease.",
     },
     {
       icon: <Zap className="h-8 w-8 text-blue-600" />,
@@ -88,24 +89,24 @@ import {
   // Testimonials Data
   export const testimonialsData = [
     {
-      name: "Sarah Johnson",
-      role: "Small Business Owner",
-      image: "https://randomuser.me/api/portraits/women/75.jpg",
+      name: "Izuku Midoriya",
+      role: "Powerless Quirk Boy",
+      image: "https://cdn.pixabay.com/photo/2018/01/15/02/01/anime-3083036_1280.jpg",
       quote:
-        "Welth has transformed how I manage my business finances. The AI insights have helped me identify cost-saving opportunities I never knew existed.",
+        "Creatzion has transformed how I manage my teamates finances. The AI insights have helped me identify cost-saving opportunities I never knew existed.",
     },
     {
-      name: "Michael Chen",
-      role: "Freelancer",
-      image: "https://randomuser.me/api/portraits/men/75.jpg",
+      name: "Naruto Uzumaki",
+      role: "7th Hokage",
+      image: "https://cdn.pixabay.com/photo/2020/12/09/18/40/anime-5818254_1280.png",
       quote:
-        "The receipt scanning feature saves me hours each month. Now I can focus on my work instead of manual data entry and expense tracking.",
+        "The receipt scanning feature saves me hours each month. Now I can focus on my Hokage work instead of manual data entry and expense tracking.",
     },
     {
-      name: "Emily Rodriguez",
-      role: "Financial Advisor",
-      image: "https://randomuser.me/api/portraits/women/74.jpg",
+      name: "Monkey D Luffy",
+      role: "King Of Pirates",
+      image: "https://cdn.pixabay.com/photo/2021/12/17/20/50/luffy-6877426_1280.png",
       quote:
-        "I recommend Welth to all my clients. The multi-currency support and detailed analytics make it perfect for international investors.",
+        "I recommend Creatzion to all my crewmates. The detailed analytics make it perfect for tracking the budget.",
     },
   ];

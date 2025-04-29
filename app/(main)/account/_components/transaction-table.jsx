@@ -82,117 +82,165 @@ export function TransactionTable({ transactions }) {
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  const exportToExcel = async (data) => {
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Transactions");
+ const exportToExcel = async (data, initialBalance = 0) => {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Transactions");
 
-      // ✅ Set default font for the entire sheet
   sheet.properties.defaultRowHeight = 20;
-  sheet.eachRow((row) => {
-    row.font = { name: "Times New Roman", size: 12 };
+
+  // Add logo
+  const image = await fetch("/logo.png");
+  const imageBlob = await image.blob();
+  const imageBuffer = await imageBlob.arrayBuffer();
+  const imageId = workbook.addImage({
+    buffer: imageBuffer,
+    extension: "png",
   });
-  
-    // ✅ Add the logo (must be in public/logo.png)
-    const image = await fetch("/logo.png");
-    const imageBlob = await image.blob();
-    const imageBuffer = await imageBlob.arrayBuffer();
-  
-    const imageId = workbook.addImage({
-      buffer: imageBuffer,
-      extension: "png",
-    });
-  
-    sheet.addImage(imageId, {
-      tl: { col: 0, row: 0 },
-      ext: { width: 200, height: 60 },
-    });
-  
-    // ✅ Add Title
-    sheet.mergeCells("A5", "E5");
-    const titleCell = sheet.getCell("A5");
-    titleCell.value = "Transaction Report";
-    titleCell.font = { size: 16, bold: true, color: { argb: "FF4F46E5 " } };
-    titleCell.alignment = { vertical: "middle", horizontal: "center" };
-  
-    // ✅ Header Row
-    sheet.addRow([
-      "Date",
-      "Description",
-      "Category",
-      "Amount",
-      "Recurring",
-    ]);
-  
-    const headerRow = sheet.getRow(6);
-    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-    headerRow.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FF9333EA" }, // Tailwind violet-600
-    };
-  
-    // ✅ Data Rows
-    data.forEach((txn) => {
-      sheet.addRow([
-        format(new Date(txn.date), "PP"),
-        txn.description,
-        txn.category,
-        (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
-        txn.isRecurring ? txn.recurringInterval : "One-time",
-      ]);
-    });
-  
-    // ✅ Style all rows
-    sheet.columns.forEach((col) => {
-      col.width = 20;
-    });
-  
-    // ✅ Generate and download the Excel file
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), "transactions.xlsx");
+  sheet.addImage(imageId, {
+    tl: { col: 0, row: 0 },
+    ext: { width: 200, height: 60 },
+  });
+
+  // Title
+  sheet.mergeCells("A5", "E5");
+  const titleCell = sheet.getCell("A5");
+  titleCell.value = "Transaction Report";
+  titleCell.font = { size: 16, bold: true, color: { argb: "FF4F46E5" } };
+  titleCell.alignment = { vertical: "middle", horizontal: "center" };
+
+  // Header Row
+  sheet.addRow(["Date", "Description", "Category", "Amount", "Recurring"]);
+  const headerRow = sheet.getRow(6);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF9333EA" },
   };
-  
-  
-  const exportToPDF = (data) => {
-    const doc = new jsPDF();
-  
-    // Add logo at the top center
-    doc.addImage(logoBase64, 'PNG', 80, 10, 50, 20);
-  
-    // Add report title
-    doc.setFontSize(16);
-    doc.setTextColor("#4F46E5"); // Tailwind violet-600
-    doc.text("Transaction Report", 105, 35, { align: "center" });
-  
-    const rows = data.map((txn) => [
+
+  // Data Rows
+  let income = 0;
+  let expense = 0;
+
+  data.forEach((txn) => {
+    const amountValue = txn.type === "EXPENSE"
+      ? `-${txn.amount.toFixed(2)}`
+      : `+${txn.amount.toFixed(2)}`;
+
+    const row = sheet.addRow([
       format(new Date(txn.date), "PP"),
       txn.description,
       txn.category,
-      (txn.type === "EXPENSE" ? "-" : "+") + txn.amount.toFixed(2),
+      amountValue,
       txn.isRecurring ? txn.recurringInterval : "One-time",
     ]);
-  
-    autoTable(doc, {
-      startY: 45,
-      head: [["Date", "Description", "Category", "Amount", "Recurring"]],
-      body: rows,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [139, 92, 246], // Tailwind violet-500
-        textColor: 255,
+
+    const amountCell = row.getCell(4);
+    amountCell.font = {
+      color: { argb: txn.type === "EXPENSE" ? "FFFF0000" : "FF00A300" },
+      bold: true,
+    };
+
+    if (txn.type === "INCOME") income += txn.amount;
+    if (txn.type === "EXPENSE") expense += txn.amount;
+  });
+
+  const totalIncome = income + initialBalance;
+  const net = totalIncome - expense;
+
+  // Summary
+  sheet.addRow([]);
+  sheet.addRow(["Initial Balance", initialBalance.toFixed(2)]);
+  sheet.addRow(["Total Income (with Initial)", totalIncome.toFixed(2)]);
+  sheet.addRow(["Total Expense", expense.toFixed(2)]);
+  sheet.addRow(["Net Total", net.toFixed(2)]);
+
+  sheet.columns.forEach((col) => {
+    col.width = 20;
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), "transactions.xlsx");
+};
+
+
+const exportToPDF = (data, initialBalance = 0) => {
+  const doc = new jsPDF();
+
+  doc.addImage(logoBase64, 'PNG', 80, 10, 50, 20);
+
+  doc.setFontSize(16);
+  doc.setTextColor("#4F46E5");
+  doc.text("Transaction Report", 105, 35, { align: "center" });
+
+  const rows = data.map((txn) => ([
+    {
+      content: format(new Date(txn.date), "PP"),
+      styles: { fontSize: 9 },
+    },
+    txn.description,
+    txn.category,
+    {
+      content: txn.type === "EXPENSE"
+        ? `-${txn.amount.toFixed(2)}`
+        : `+${txn.amount.toFixed(2)}`,
+      styles: {
+        textColor: txn.type === "EXPENSE" ? [255, 0, 0] : [0, 163, 0],
         fontStyle: 'bold',
       },
-      alternateRowStyles: {
-        fillColor: [245, 243, 255], // Tailwind violet-100
-      },
-      styles: {
-        cellPadding: 3,
-        fontSize: 10,
-      },
-    });
+    },
+    txn.isRecurring ? txn.recurringInterval : "One-time",
+  ]));
+
+  autoTable(doc, {
+    startY: 45,
+    head: [["Date", "Description", "Category", "Amount", "Recurring"]],
+    body: rows,
+    theme: 'striped',
+    headStyles: {
+      fillColor: [139, 92, 246],
+      textColor: 255,
+      fontStyle: 'bold',
+    },
+    alternateRowStyles: {
+      fillColor: [245, 243, 255],
+    },
+    styles: {
+      cellPadding: 3,
+      fontSize: 10,
+    },
+  });
+
+  let income = 0;
+  let expense = 0;
+
+  data.forEach((txn) => {
+    if (txn.type === "INCOME") income += txn.amount;
+    if (txn.type === "EXPENSE") expense += txn.amount;
+  });
+
+  const totalIncome = income + initialBalance;
+  const net = totalIncome - expense;
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    head: [["Summary", "Amount"]],
+    body: [
+      ["Initial Balance", initialBalance.toFixed(2)],
+      ["Total Income (with Initial)", totalIncome.toFixed(2)],
+      ["Total Expense", expense.toFixed(2)],
+      ["Net Total", net.toFixed(2)],
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [139, 92, 246], textColor: 255 },
+    styles: { fontSize: 11 },
+  });
+
+  doc.save("transactions.pdf");
+};
+
   
-    doc.save("transactions.pdf");
-  };
+  
   
   const [startDate, setStartDate] = useState("");
 const [endDate, setEndDate] = useState("");
@@ -403,18 +451,26 @@ const filterByDate = (txn) => {
 
   <Dialog.Portal>
     <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[95%] max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white px-8 py-10 shadow-xl transition-all duration-300 space-y-8">
+    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[90%] max-w-2xl md:max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white px-6 py-8 md:px-8 md:py-10 shadow-xl transition-all duration-300 space-y-6">
+
+
       
-      {/* Header */}
-      <div className="flex justify-between items-center border-b pb-4">
-      <Dialog.Title className="text-2xl font-semibold text-gray-800"></Dialog.Title>
-        <h2 className="text-2xl font-semibold text-gray-800">Export Transactions</h2>
-        <Dialog.Close asChild>
-          <button className="text-gray-500 hover:text-gray-700 transition">
-            <X className="h-6 w-6" />
-          </button>
-        </Dialog.Close>
-      </div>
+     {/* Header */}
+<div className="flex items-center justify-between border-b pb-4">
+  <div className="flex items-center space-x-2">
+    <Download className="h-6 w-6 text-gray-800" />
+    <Dialog.Title className="text-2xl font-semibold text-gray-800">
+      Export Transactions
+    </Dialog.Title>
+  </div>
+  <Dialog.Close asChild>
+    <button className="text-gray-500 hover:text-gray-700 transition">
+      <X className="h-6 w-6" />
+    </button>
+  </Dialog.Close>
+</div>
+
+
 
       {/* Quick Month Select */}
       <div>
@@ -440,27 +496,32 @@ const filterByDate = (txn) => {
         </div>
       </div>
 
-      {/* Custom Date Range */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="text-sm font-medium text-gray-600 mb-1 block">From</label>
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-violet-500"
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-600 mb-1 block">To</label>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-violet-500"
-          />
-        </div>
-      </div>
+    {/* Custom Date Range */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* From Date */}
+  <div className="w-full">
+    <label className="text-sm font-semibold text-gray-700 mb-2 block">From</label>
+    <Input
+      type="date"
+      value={startDate}
+      onChange={(e) => setStartDate(e.target.value)}
+      className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[44px]"
+    />
+  </div>
+
+  {/* To Date */}
+  <div className="w-full">
+    <label className="text-sm font-semibold text-gray-700 mb-2 block">To</label>
+    <Input
+      type="date"
+      value={endDate}
+      onChange={(e) => setEndDate(e.target.value)}
+      className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[44px]"
+    />
+  </div>
+</div>
+
+
 
       {/* Action Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">

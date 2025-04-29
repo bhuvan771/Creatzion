@@ -65,7 +65,7 @@ const [open, setOpen] = useState(false);
             <div className="space-y-2">
             <label htmlFor="type" className="text-sm font-medium">Account Type</label> 
             <Select onValueChange={(value)=>setValue("type", value)} defaultValue={watch("type")} >
-  <SelectTrigger id="type">
+  <SelectTrigger id="type" className="w-full">
     <SelectValue placeholder="Select Type" />
   </SelectTrigger>
   <SelectContent>
@@ -118,4 +118,4 @@ const [open, setOpen] = useState(false);
   )
 }
 
-export default CreateAccountDrawer;
+export default CreateAccountDrawer; 
