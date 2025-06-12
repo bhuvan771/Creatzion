@@ -89,7 +89,7 @@ export function TransactionTable({ transactions }) {
   sheet.properties.defaultRowHeight = 20;
 
   // Add logo
-  const image = await fetch("/logo.png");
+  const image = await fetch("/logo3.png");
   const imageBlob = await image.blob();
   const imageBuffer = await imageBlob.arrayBuffer();
   const imageId = workbook.addImage({
