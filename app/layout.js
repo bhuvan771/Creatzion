@@ -14,8 +14,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
      <ClerkProvider
-     publishableKey={import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-  frontendApi={import.meta.env.CLERK_FRONTEND_API}
+     publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+  frontendApi={process.env.CLERK_FRONTEND_API}
      >
     <html lang="en">
       <body className={`${inter.className} `}>
