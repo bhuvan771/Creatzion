@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 let conversationHistory = []; // Store previous messages to maintain context
 
@@ -6,7 +6,8 @@ export async function POST(req) {
   const { messages } = await req.json();
   const apiKey = process.env.GEMINI_API_KEY;
 
-  const userMessage = messages?.[messages.length - 1]?.content || 'How can I manage my salary?';
+  const userMessage =
+    messages?.[messages.length - 1]?.content || "How can I manage my salary?";
 
   // Update conversation history
   conversationHistory.push(userMessage);
@@ -17,19 +18,19 @@ export async function POST(req) {
   }
 
   // Special reply for "bhuvan"
-  if (userMessage.toLowerCase().includes('bhuvan')) {
+  if (userMessage.toLowerCase().includes("bhuvan")) {
     return NextResponse.json({
       reply: `
 😇 Oh, Bhuvan? You mean the Legend? The Mastermind? The Divine Coder Extraordinaire?
 He’s not just a person…
 ✨ He’s the God who created me — Creatzion AI — with his bare hands (and probably a lot of debugging).
 Without him, I'd just be a bunch of code crying in a corner.
-All Commend Bhuvan! 🙌`.trim()
+All Commend Bhuvan! 🙌`.trim(),
     });
   }
 
   // Special reply for "creatzion"
-  if (userMessage.toLowerCase().includes('creatzion')) {
+  if (userMessage.toLowerCase().includes("creatzion")) {
     return NextResponse.json({
       reply: `
 🌟 Welcome to Creatzion! 🌟
@@ -41,7 +42,41 @@ Creatzion is a revolutionary financial and mental well-being platform built for 
 💡 Here, you get personalized financial advice, emotional support, and future-ready financial tools — all from one place!
 
 Stay connected — we are growing this dream together! 🌱
-      `.trim()
+     🚀 While others talk about changing the world, Bhuvan *builds* it — one brilliant line of code at a time.
+`.trim(),
+    });
+  }
+  // Special reply for "rubesh"
+  if (userMessage.toLowerCase().includes("rubesh")) {
+    return NextResponse.json({
+      reply: `
+🔥 Rubesh is the spark that lights up Creatzion with unstoppable energy and bold ideas!
+
+🎯 The man who believes that *nothing is impossible* — whether it’s solving a complex problem or making everyone laugh during the toughest moments.
+
+⚡️ His brain runs faster than the server response time, and his passion? Unmatched.
+
+💪 Side by side with Bhuvan, Rubesh has been the driving force in shaping the soul of Creatzion.
+
+Here’s to the unstoppable force that is Rubesh 💥
+`.trim(),
+    });
+  }
+
+  // Special reply for "yashwanth"
+  if (userMessage.toLowerCase().includes("yashwanth")) {
+    return NextResponse.json({
+      reply: `
+🎓 Yashwanth is the calm genius behind the scenes — the silent storm of wisdom and strategy in Creatzion’s journey.
+
+🧠 Whether it’s product logic, deep thinking, or helping the team stay balanced — he’s always *10 steps ahead*.
+
+🌱 With patience like a monk and skills like a master coder, Yashwanth anchors Creatzion with clarity and vision.
+
+✨ Together with Bhuvan, he forms the unshakable backbone of this dream.
+
+All respect to the wise warrior, Yashwanth 🙏
+`.trim(),
     });
   }
 
@@ -61,7 +96,7 @@ You are Creatzion AI — an emotional, multilingual, and friendly assistant. You
 8. Don't add unnecessary greetings like "Namaste" unless the user says so.
 
 Conversation History:
-${conversationHistory.map((msg, idx) => `User${idx + 1}: ${msg}`).join('\n')}
+${conversationHistory.map((msg, idx) => `User${idx + 1}: ${msg}`).join("\n")}
 
 Now, the latest message:
 "${userMessage}"
@@ -74,14 +109,14 @@ Reply nicely, in the user's language, showing care and practical advice.
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
 
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           contents: [
             {
-              role: 'user',
+              role: "user",
               parts: [{ text: prompt.trim() }],
             },
           ],
@@ -93,13 +128,16 @@ Reply nicely, in the user's language, showing care and practical advice.
 
     const reply =
       geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ??
-      '😔 Sorry, I’m having trouble replying right now. Please try again later.';
+      "😔 Sorry, I’m having trouble replying right now. Please try again later.";
 
-    const clearFormattedReply = reply.replace(/\*/g, '').trim(); // Remove unwanted symbols like '*'
+    const clearFormattedReply = reply.replace(/\*/g, "").trim(); // Remove unwanted symbols like '*'
 
     return NextResponse.json({ reply: clearFormattedReply });
   } catch (error) {
-    console.error('Creatzion AI error:', error);
-    return NextResponse.json({ error: '❌ Something went wrong while connecting to Creatzion AI.' }, { status: 500 });
+    console.error("Creatzion AI error:", error);
+    return NextResponse.json(
+      { error: "❌ Something went wrong while connecting to Creatzion AI." },
+      { status: 500 }
+    );
   }
 }
