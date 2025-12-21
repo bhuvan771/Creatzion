@@ -443,43 +443,40 @@ const filterByDate = (txn) => {
       variant="outline"
       size="icon"
       title="Export"
-      className="hover:bg-blue-100 text-blue-600"
+      className="hover:bg-purple-50 hover:border-purple-300 transition-colors"
     >
       <Download className="h-4 w-4" />
     </Button>
   </Dialog.Trigger>
 
   <Dialog.Portal>
-    <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" />
-    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[90%] max-w-2xl md:max-w-3xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white px-6 py-8 md:px-8 md:py-10 shadow-xl transition-all duration-300 space-y-6">
+    <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
+    <Dialog.Content className="fixed z-50 left-1/2 top-1/2 w-[90%] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl">
 
-
-      
-     {/* Header */}
-<div className="flex items-center justify-between border-b pb-4">
-  <div className="flex items-center space-x-2">
-    <Download className="h-6 w-6 text-gray-800" />
-    <Dialog.Title className="text-2xl font-semibold text-gray-800">
-      Export Transactions
-    </Dialog.Title>
-  </div>
-  <Dialog.Close asChild>
-    <button className="text-gray-500 hover:text-gray-700 transition">
-      <X className="h-6 w-6" />
-    </button>
-  </Dialog.Close>
-</div>
-
-
+      {/* Header */}
+      <div className="flex items-center justify-between pb-4 border-b">
+        <div className="flex items-center space-x-2">
+          <Download className="h-5 w-5 text-purple-600" />
+          <Dialog.Title className="text-xl font-semibold text-gray-900">
+            Export Transactions
+          </Dialog.Title>
+        </div>
+        <Dialog.Close asChild>
+          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </Dialog.Close>
+      </div>
 
       {/* Quick Month Select */}
-      <div>
+      <div className="mt-5">
         <p className="text-sm font-medium text-gray-700 mb-3">Quick Month Select</p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((month, idx) => {
             const year = new Date().getFullYear();
             const first = new Date(year, idx, 1).toISOString().split("T")[0];
             const last = new Date(year, idx + 1, 0).toISOString().split("T")[0];
+            const isSelected = startDate === first && endDate === last;
             return (
               <button
                 key={idx}
@@ -487,7 +484,11 @@ const filterByDate = (txn) => {
                   setStartDate(first);
                   setEndDate(last);
                 }}
-                className="rounded-lg text-sm px-3 py-2 font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 transition"
+                className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                  isSelected
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-purple-300 hover:bg-purple-50"
+                }`}
               >
                 {month}
               </button>
@@ -496,46 +497,47 @@ const filterByDate = (txn) => {
         </div>
       </div>
 
-    {/* Custom Date Range */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {/* From Date */}
-  <div className="w-full">
-    <label className="text-sm font-semibold text-gray-700 mb-2 block">From</label>
-    <Input
-      type="date"
-      value={startDate}
-      onChange={(e) => setStartDate(e.target.value)}
-      className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[44px]"
-    />
-  </div>
+      {/* Custom Date Range */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+        {/* From Date */}
+        <div className="w-full">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">From</label>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full"
+          />
+        </div>
 
-  {/* To Date */}
-  <div className="w-full">
-    <label className="text-sm font-semibold text-gray-700 mb-2 block">To</label>
-    <Input
-      type="date"
-      value={endDate}
-      onChange={(e) => setEndDate(e.target.value)}
-      className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-violet-500 focus:border-violet-500 min-h-[44px]"
-    />
-  </div>
-</div>
-
-
+        {/* To Date */}
+        <div className="w-full">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">To</label>
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full"
+          />
+        </div>
+      </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-      <button
-  onClick={() => exportToExcel(filteredAndSortedTransactions.filter(filterByDate))}
-  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
->
-  📗 Download Excel
-</button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 pt-5 border-t">
+        <button
+          onClick={() => exportToExcel(filteredAndSortedTransactions.filter(filterByDate))}
+          className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors"
+        >
+          <Download className="h-4 w-4" />
+          <span>Download Excel</span>
+        </button>
+        
         <button
           onClick={() => exportToPDF(filteredAndSortedTransactions.filter(filterByDate))}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition"
+          className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-md transition-colors"
         >
-          📘 Download PDF
+          <Download className="h-4 w-4" />
+          <span>Download PDF</span>
         </button>
       </div>
     </Dialog.Content>

@@ -66,7 +66,8 @@ const AddTransactionForm = ({
             type: "EXPENSE",
             amount: "",
             description: "",
-            accountId: accounts.find((ac) => ac.isDefault)?.id,
+            accountId: accounts.find((ac) => ac.isDefault)?.id || accounts[0]?.id,
+            category: categories.find((cat) => cat.type === "EXPENSE")?.id || "",
             date: new Date(),
             isRecurring: false,
           },
@@ -109,6 +110,17 @@ const AddTransactionForm = ({
   const filteredCategories = categories.filter(
     (category) => category.type === type
   );
+
+  // Reset category when type changes
+  useEffect(() => {
+    if (!editMode) {
+      const defaultCategory = categories.find((cat) => cat.type === type)?.id;
+      if (defaultCategory) {
+        setValue("category", defaultCategory);
+      }
+    }
+  }, [type, editMode, categories, setValue]);
+
   const handleScanComplete = (scannedData) => {
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());

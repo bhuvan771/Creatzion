@@ -230,7 +230,12 @@ export async function getUserTransactions(query = {}) {
 // Scan Receipt
 export async function scanReceipt(file) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Check if API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("Gemini API key is not configured. Please add GEMINI_API_KEY to your environment variables.");
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Convert File to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
@@ -286,7 +291,7 @@ export async function scanReceipt(file) {
     }
   } catch (error) {
     console.error("Error scanning receipt:", error);
-    throw new Error("Failed to scan receipt");
+    throw new Error(error.message || "Failed to scan receipt");
   }
 }
 
