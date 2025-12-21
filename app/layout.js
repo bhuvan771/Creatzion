@@ -20,12 +20,24 @@ export default function RootLayout({ children }) {
           <Header/> 
           <main className="min-h-screen">{children}</main>
           <Toaster richColors/>
-          {/*footer*/}
-          <footer className="bg-blue-50 py-12">
-            <div className="container mx-auto px-4 text-center text-gray-600"> 
-              <p>Made by YRB Coders</p>
-            </div>
-          </footer>
+          
+         <footer className="border-t border-gray-100 bg-white">
+  <div className="mx-auto max-w-7xl px-6 py-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+
+      <p className="text-sm font-medium text-gray-900">
+        Creatzion
+      </p>
+
+      <p className="text-xs text-gray-500">
+        © {new Date().getFullYear()} · Intelligent finance platform
+      </p>
+
+    </div>
+  </div>
+</footer>
+
+
         </body>
       </html>
     </ClerkProvider>

@@ -64,7 +64,7 @@ export async function getAccountWithTransactions(accountId){
     }
 
     const account = await db.account.findUnique({
-        where:{id: accountId, userId: user.Id},
+        where:{id: accountId, userId: user.id},
         include:{
             transactions :{
                 orderBy:{date:"desc"},
