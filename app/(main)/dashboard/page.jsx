@@ -7,7 +7,7 @@ import AccountCard from "./_components/account-card";
 import { getCurrentBudget } from "@/actions/budget";
 import BudgetProgress from "./_components/budget-progress";
 import { DashboardOverview } from "./_components/transaction-overview";
-import CreatzionAI from "@/components/CreatzionAI";
+import CreatzionAI from "@/components/CreatzionAIDynamic";
 
 async function DashboardPage(){
   const [accounts, transactions] = await Promise.all([

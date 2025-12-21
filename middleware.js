@@ -22,15 +22,16 @@ const aj = arcjet({
   ],
 });
 
-const clerk = clerkMiddleware(async (auth, req)=> {
-  const{ userId } = await auth();
+const clerk = clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
 
-  if(!userId && isProtectedRoute(req)) {
-    const{ redirectToSignIn } = await auth();
-
+  if (!userId && isProtectedRoute(req)) {
+    const { redirectToSignIn } = await auth();
     return redirectToSignIn();
   }
 
+  // Explicitly return to allow request to continue
+  return;
 });
 
 export default createMiddleware(aj, clerk);
