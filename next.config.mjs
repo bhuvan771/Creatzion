@@ -15,7 +15,11 @@ const nextConfig = {
         }
     },
 
-    // Ensure proper handling of Clerk and prevent connection issues
+    // Turbopack configuration (Next.js 16+ default)
+    // Empty config to silence the warning - Turbopack works fine with defaults
+    turbopack: {},
+
+    // Webpack config (for backward compatibility when using --webpack flag)
     webpack: (config, { isServer }) => {
         if (!isServer) {
             config.resolve.fallback = {
