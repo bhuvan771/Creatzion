@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { X, Maximize2, Minimize2, Bot } from 'lucide-react';
+import { TransactionTable } from './TransactionTable';
+import { MonthlySummaryTable } from './MonthlySummaryTable';
 
 const CreatzionAI = () => {
   const [showChatbot, setShowChatbot] = useState(false);
@@ -55,7 +57,15 @@ const CreatzionAI = () => {
 
       const data = await response.json();
       const botReply = data.reply || data.error || "⚠️ No reply received.";
-      setMessages([...newMessages, { role: 'bot', content: botReply }]);
+      
+      // Check if response contains transaction data
+      const botMessage = { 
+        role: 'bot', 
+        content: botReply,
+        transactionData: data.transactionData || null // Store transaction data if present
+      };
+      
+      setMessages([...newMessages, botMessage]);
     } catch (error) {
       setMessages([...newMessages, { role: 'bot', content: "⚠️ Something went wrong." }]);
     } finally {
@@ -106,13 +116,37 @@ const CreatzionAI = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`px-4 py-3 rounded-xl text-sm max-w-[85%] break-words ${
+                className={`${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white self-end ml-auto'
-                    : 'bg-white text-black border self-start'
+                    ? 'px-4 py-3 rounded-xl text-sm max-w-[85%] bg-gradient-to-r from-blue-400 to-indigo-500 text-white self-end ml-auto break-words'
+                    : 'w-full'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'user' ? (
+                  msg.content
+                ) : (
+                  <div className="space-y-2">
+                    {/* Show transaction table if data exists */}
+                    {msg.transactionData && (
+                      msg.transactionData.isYearSummary ? (
+                        <MonthlySummaryTable 
+                          transactions={msg.transactionData.transactions}
+                          year={msg.transactionData.year}
+                        />
+                      ) : (
+                        <TransactionTable 
+                          transactions={msg.transactionData.transactions}
+                          total={msg.transactionData.total}
+                          count={msg.transactionData.count}
+                        />
+                      )
+                    )}
+                    {/* Show AI commentary */}
+                    <div className="px-4 py-3 rounded-xl text-sm max-w-[85%] bg-white text-black border self-start break-words">
+                      {msg.content}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
 
